@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NASA Photo of the Day</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0b0c10;
+      color: #ffffff;
+      text-align: center;
+      padding: 30px;
+    }
+    #apod-container {
+      margin-top: 30px;
+      background: #1f2833;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    img, iframe {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌌 NASA Photo of the Day</h1>
+  <div id="apod-container">
+    <h2 id="title"></h2>
+    <p id="date"></p>
+    <div id="media"></div>
+    <p id="explanation" style="margin-top: 20px;"></p>
+  </div>
+
+  <script>
+    const apiKey = "DEMO_KEY"; // You can replace with your own key from api.nasa.gov
+    const url = `https://api.nasa.gov/planetary/apod?api_key=${apiKey}`;
+
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("title").innerText = data.title;
+        document.getElementById("date").innerText = `Date: ${data.date}`;
+        document.getElementById("explanation").innerText = data.explanation;
+
+        const mediaDiv = document.getElementById("media");
+        if (data.media_type === "image") {
+          const img = document.createElement("img");
+          img.src = data.url;
+          mediaDiv.appendChild(img);
+        } else if (data.media_type === "video") {
+          const iframe = document.createElement("iframe");
+          iframe.src = data.url;
+          iframe.width = "100%";
+          iframe.height = "400";
+          iframe.allowFullscreen = true;
+          mediaDiv.appendChild(iframe);
+        }
+      })
+      .catch(error => {
+        console.error("Error fetching NASA APOD:", error);
+      });
+  </script>
+</body>
+</html>
