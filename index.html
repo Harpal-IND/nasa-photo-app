@@ -10,7 +10,14 @@
       color: #ffffff;
       text-align: center;
       padding: 30px;
+      transition: background 0.3s, color 0.3s;
     }
+
+    .light-mode {
+      background: #f4f4f4;
+      color: #111;
+    }
+
     #apod-container {
       margin-top: 30px;
       background: #1f2833;
@@ -21,50 +28,129 @@
       margin-left: auto;
       margin-right: auto;
     }
+
+    .light-mode #apod-container {
+      background: #ffffff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
     img, iframe {
       max-width: 100%;
       border-radius: 12px;
       margin-top: 20px;
     }
+
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    #explanation {
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <h1>🌌 NASA Photo of the Day</h1>
+
+  <!-- 📅 Date Picker -->
+  <input type="date" id="date-picker" max="" />
+
+  <!-- 🌙 Theme Toggle -->
+  <button onclick="toggleTheme()">🌓 Toggle Theme</button>
+
+  <!-- 📥 Download Button -->
+  <button id="download-btn" class="hidden">⬇️ Download</button>
+
   <div id="apod-container">
-    <h2 id="title"></h2>
+    <h2 id="title" title="Click for more info" onclick="toggleExplanation()" style="cursor: pointer;"></h2>
     <p id="date"></p>
     <div id="media"></div>
-    <p id="explanation" style="margin-top: 20px;"></p>
+    <p id="explanation" class="hidden"></p>
   </div>
 
   <script>
-    const apiKey = "DEMO_KEY"; // You can replace with your own key from api.nasa.gov
-    const url = `https://api.nasa.gov/planetary/apod?api_key=${apiKey}`;
+    const apiKey = "DEMO_KEY"; // Replace with your real key
+    const dateInput = document.getElementById("date-picker");
+    const today = new Date().toISOString().split("T")[0];
+    dateInput.max = today;
 
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById("title").innerText = data.title;
-        document.getElementById("date").innerText = `Date: ${data.date}`;
-        document.getElementById("explanation").innerText = data.explanation;
+    const body = document.body;
+    const downloadBtn = document.getElementById("download-btn");
+    const mediaDiv = document.getElementById("media");
+    const explanation = document.getElementById("explanation");
 
-        const mediaDiv = document.getElementById("media");
-        if (data.media_type === "image") {
-          const img = document.createElement("img");
-          img.src = data.url;
-          mediaDiv.appendChild(img);
-        } else if (data.media_type === "video") {
-          const iframe = document.createElement("iframe");
-          iframe.src = data.url;
-          iframe.width = "100%";
-          iframe.height = "400";
-          iframe.allowFullscreen = true;
-          mediaDiv.appendChild(iframe);
-        }
-      })
-      .catch(error => {
-        console.error("Error fetching NASA APOD:", error);
-      });
+    // Load today's photo on page load
+    window.onload = () => {
+      getAPOD(today);
+      dateInput.value = today;
+    };
+
+    // 📅 Load image on date change
+    dateInput.addEventListener("change", () => {
+      getAPOD(dateInput.value);
+    });
+
+    // 🌙 Theme Toggle
+    function toggleTheme() {
+      body.classList.toggle("light-mode");
+    }
+
+    // 📖 Toggle explanation
+    function toggleExplanation() {
+      explanation.classList.toggle("hidden");
+    }
+
+    // 📷 Fetch NASA Photo
+    function getAPOD(date) {
+      const url = `https://api.nasa.gov/planetary/apod?api_key=${apiKey}&date=${date}`;
+
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById("title").innerText = data.title;
+          document.getElementById("date").innerText = `Date: ${data.date}`;
+          explanation.innerText = data.explanation;
+          explanation.classList.add("hidden");
+
+          mediaDiv.innerHTML = "";
+          downloadBtn.classList.add("hidden");
+
+          if (data.media_type === "image") {
+            const img = document.createElement("img");
+            img.src = data.url;
+            mediaDiv.appendChild(img);
+
+            downloadBtn.onclick = () => {
+              const link = document.createElement("a");
+              link.href = data.url;
+              link.download = "nasa-apod.jpg";
+              link.click();
+            };
+            downloadBtn.classList.remove("hidden");
+
+          } else if (data.media_type === "video") {
+            const iframe = document.createElement("iframe");
+            iframe.src = data.url;
+            iframe.width = "100%";
+            iframe.height = "400";
+            iframe.allowFullscreen = true;
+            mediaDiv.appendChild(iframe);
+          }
+        })
+        .catch(error => {
+          mediaDiv.innerHTML = "<p>❌ Error loading APOD</p>";
+          console.error("Error fetching NASA APOD:", error);
+        });
+    }
   </script>
 </body>
 </html>
