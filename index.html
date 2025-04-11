@@ -127,7 +127,6 @@
   <nav>
     <button onclick="showTab('apod')" class="active">APOD</button>
     <button onclick="showTab('search')">Search</button>
-    <button onclick="showTab('rover')">Rover</button>
     <button onclick="showTab('favorites')">Favorites</button>
   </nav>
   <section id="apod" class="active">
@@ -142,17 +141,7 @@
     <button onclick="searchNASA()">Search</button>
     <div id="search-results" class="gallery"></div>
   </section>
-  <section id="rover">
-    <h2>Mars Rover Photos</h2>
-    <select id="rover-select">
-      <option value="curiosity">Curiosity</option>
-      <option value="opportunity">Opportunity</option>
-      <option value="spirit">Spirit</option>
-    </select>
-    <input type="date" id="rover-date">
-    <button onclick="getRoverPhotos()">Get Photos</button>
-    <div id="rover-photos" class="gallery"></div>
-  </section>
+
   <section id="favorites">
     <h2>Saved Favorites</h2>
     <div id="favorites-list" class="gallery"></div>
@@ -196,21 +185,6 @@
         <div class="card">
           <img src="${item.links[0].href}" alt="NASA Image">
           <p>${item.data[0].title}</p>
-        </div>
-      `).join('');
-    }
-
-    async function getRoverPhotos() {
-      const rover = document.getElementById('rover-select').value;
-      const date = document.getElementById('rover-date').value;
-      const url = `https://api.nasa.gov/mars-photos/api/v1/rovers/${rover}/photos?earth_date=${date}&api_key=${apiKey}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      const container = document.getElementById('rover-photos');
-      container.innerHTML = data.photos.map(photo => `
-        <div class="card">
-          <img src="${photo.img_src}" alt="Mars Photo">
-          <p>${photo.camera.full_name}</p>
         </div>
       `).join('');
     }
